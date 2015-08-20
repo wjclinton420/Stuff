@@ -7,6 +7,10 @@ Desktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
+WindowsFormsApplication1/bin
+WindowsFormsApplication1/obj
+.gitignore
+.gitattributes
 
 # Windows Installer files
 *.cab
