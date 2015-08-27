@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
 
                 if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 {
-                    // Show the file.
+                    // Remove hidden attribute from file - Can not overwrite the file otherwise.
                     attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
                     File.SetAttributes(path, attributes);
                     Console.WriteLine("The {0} file is no longer hidden.", path);
@@ -233,6 +233,14 @@ namespace WindowsFormsApplication1
                     Console.WriteLine("The {0} file has been overwritten.", path);
                     File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
                     Console.WriteLine("The {0} file is now hidden.", path);
+                }
+                else
+                {
+                    File.WriteAllText(Program.path, ""); //overwrite the file
+                    Console.WriteLine("The {0} file has been overwritten.", path);
+                    // Let's try to make the file hidden
+                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
+                    Console.WriteLine("The {0} file is now hidden,".path);
                 }
             }
 
