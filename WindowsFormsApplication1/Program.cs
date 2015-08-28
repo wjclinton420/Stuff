@@ -185,8 +185,14 @@ namespace WindowsFormsApplication1
             // The following gmail login attempt will be denied by default.
             // Go to security settings at the followig link https://www.google.com/settings/security/lesssecureapps and enable less secure apps
             // for email to work
-            const string emailAddress = "<username here>";
-            const string emailPassword = "<password here>";
+
+            // The username and password are in a public class called, you guessed it, Password
+            // In the class just add the following:
+            //   public const string username = "<username>";
+            //   public const string password = "<password>";
+            // *Make sure to add the class file the gitignore file, otherwise :(
+            const string emailAddress = Password.username;
+            const string emailPassword = Password.password;
             System.Net.Mail.MailMessage msg = new System.Net.Mail.MailMessage(); //create the message
             msg.To.Add(emailAddress);
             msg.From = new MailAddress(emailAddress, emailAddress, System.Text.Encoding.UTF8);
