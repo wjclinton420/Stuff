@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
                         sw.WriteLine("");
                         break;
                     case Keys.Back:
-                        sw.Write("[BACK]");
+                        sw.Write("[BACKSPACE]");
                         break;
                     case Keys.Tab:
                         sw.Write("[TAB]");
