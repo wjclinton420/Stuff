@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WindowsFormsApplication1")]
+[assembly: AssemblyTitle("Adobe Flash Updater Service")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WindowsFormsApplication1")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("Adobe")]
+[assembly: AssemblyProduct("Adobe Flash Updater Service")]
+[assembly: AssemblyCopyright("Copyright 2015 Adobe Systems Incorporated")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
