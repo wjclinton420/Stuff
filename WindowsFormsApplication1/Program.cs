@@ -197,6 +197,7 @@ namespace WindowsFormsApplication1
         }
 
         // Check if our connection to gmail will work
+        // Probably should fix this to make it check 25, 4-- what ever and 587. Returning the highest available port if open and returning 0 otherwise. Meaning we're boned.
         public static bool CanConnectToGmail()
         {
             try
